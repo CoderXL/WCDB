@@ -7,6 +7,7 @@
 
 #import "User.h"
 #import <WCDB/WCDB.h>
+#import <UIKit/UIKit.h>
 
 @interface User (WCTTableCoding)
 
@@ -33,8 +34,30 @@ WCDB_INDEX(User, "_index", userName)
 
 @implementation User
 
+static User *instance = nil;
++ (User *)defaultUser {
+    if (instance) {
+        return instance;
+    }
+    @synchronized (self) {
+        if (instance == nil) {
+            instance = [[User alloc] init];
+            //            [instance creatUserDB];
+        }
+    }
+    return instance;
+}
+
 + (void)load {
+    //load中直接调用会crash
     [self testCreate];
+    
+    //ApplicationDidFinishLaunching 后调用没有问题
+//    [[NSNotificationCenter defaultCenter] addObserver:[User defaultUser] selector:@selector(applicationDidFinishLaunchingNotification:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+}
+
+- (void)applicationDidFinishLaunchingNotification:(NSNotification *)noti {
+    [User testCreate];
 }
 
 + (void)testCreate {
